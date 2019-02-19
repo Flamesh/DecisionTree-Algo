@@ -1,8 +1,7 @@
 from __future__ import print_function 
 import numpy as np 
 import pandas as pd 
-from sklearn.model_selection import train_test_split
-import pydotplus
+
 
 class TreeNode(object):
     def __init__(self, ids = None, children = [], entropy = 0, depth = 0):
@@ -23,10 +22,10 @@ class TreeNode(object):
 
 
 def entropy(freq):
-    # remove prob 0 
+    
     freq_0 = freq[np.array(freq).nonzero()[0]]
     prob_0 = freq_0/float(freq_0.sum())
-    #print(freq_0)
+    
     return -np.sum(prob_0*np.log(prob_0))
 
 class DecisionTreeC45(object):
@@ -44,13 +43,7 @@ class DecisionTreeC45(object):
         self.attributes = list(data)
         self.target = target 
         self.labels = target.unique()
-        
-
-        #print(self.attributes)
-        #print(self.labels)
-        #print(type(self.attributes), type(self.labels))
-        #print(type(data), type(target))
-        
+                
         ids = range(self.Ntrain)
         self.root = TreeNode(ids = ids, entropy = self._entropy(ids), depth = 0)
         queue = [self.root]
@@ -63,25 +56,24 @@ class DecisionTreeC45(object):
                 queue += node.children
             else:
                 self._set_label(node)
-        #print()
+        
     def _entropy(self, ids):
         # calculate entropy of a node with index ids
         if len(ids) == 0: return 0
         ids = [i+1 for i in ids] # panda series index starts from 1
         freq = np.array(self.target[ids].value_counts())
         
-        #print(entropy(freq))
+        
         return entropy(freq)
 
     def _set_label(self, node):
-        # find label for a node if it is a leaf
-        # simply chose by major voting 
+       
         target_ids = [i + 1 for i in node.ids]  # target is a series variable
         node.set_label(self.target[target_ids].mode()[0]) # most frequent label
     
     def _split(self, node):
         ids = node.ids 
-        #print(ids)
+        
         best_gain = 0
         best_splits = []
         best_attribute = None
@@ -89,10 +81,10 @@ class DecisionTreeC45(object):
         sub_data = self.data.iloc[ids, :]
         for i, att in enumerate(self.attributes):
             values = self.data.iloc[ids, i].unique().tolist()
-            #print(values)
+            
             if len(values) == 1: continue # entropy = 0
             splits = []
-            #print(values)
+            
             for val in values: 
                 sub_ids = sub_data.index[sub_data[att] == val].tolist()
                 splits.append([sub_id-1 for sub_id in sub_ids])
@@ -120,10 +112,7 @@ class DecisionTreeC45(object):
         return child_nodes
 
     def predict(self, new_data):
-        """
-        :param new_data: a new dataframe, each row is a datapoint
-        :return: predicted labels for each row
-        """
+       
         npoints = new_data.count()[0]
         #print(type(npoints))
         labels = [None]*npoints
