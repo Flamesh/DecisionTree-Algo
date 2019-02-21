@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np 
 import pandas as pd 
 import pydotplus
- 
+
 class TreeNode(object):
 
     def __init__(self, ids = None, children = [], entropy = 0, depth = 0):
