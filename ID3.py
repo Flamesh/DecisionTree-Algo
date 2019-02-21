@@ -1,10 +1,10 @@
 from __future__ import print_function 
 import numpy as np 
 import pandas as pd 
-from sklearn.model_selection import train_test_split
 import pydotplus
-
+ 
 class TreeNode(object):
+
     def __init__(self, ids = None, children = [], entropy = 0, depth = 0):
         self.ids = ids           # index of data in this node
         self.entropy = entropy   # entropy, will fill later
@@ -23,10 +23,10 @@ class TreeNode(object):
 
 
 def entropy(freq):
-    # remove prob 0 
+    
     freq_0 = freq[np.array(freq).nonzero()[0]]
     prob_0 = freq_0/float(freq_0.sum())
-    #print(freq_0)
+    
     return -np.sum(prob_0*np.log(prob_0))
 
 class DecisionTreeID3(object):
@@ -41,36 +41,31 @@ class DecisionTreeID3(object):
     def fit(self, data, target):
         self.Ntrain = data.count()[0]
         self.data = data 
+        
         self.attributes = list(data)
         self.target = target 
         self.labels = target.unique()
-        
-
-        #print(self.attributes)
-        #print(self.labels)
-        #print(type(self.attributes), type(self.labels))
-        #print(type(data), type(target))
-        
+           
         ids = range(self.Ntrain)
         self.root = TreeNode(ids = ids, entropy = self._entropy(ids), depth = 0)
+       
         queue = [self.root]
         while queue:
             node = queue.pop()
             if node.depth < self.max_depth or node.entropy < self.min_gain:
-                node.children = self._split(node)
+                node.children = self._split(node)   
                 if not node.children: #leaf node
                     self._set_label(node)
                 queue += node.children
             else:
                 self._set_label(node)
-        #print()
+        
     def _entropy(self, ids):
         # calculate entropy of a node with index ids
+
         if len(ids) == 0: return 0
         ids = [i+1 for i in ids] # panda series index starts from 1
         freq = np.array(self.target[ids].value_counts())
-        
-        #print(entropy(freq))
         return entropy(freq)
 
     def _set_label(self, node):
@@ -80,13 +75,13 @@ class DecisionTreeID3(object):
         node.set_label(self.target[target_ids].mode()[0]) # most frequent label
     
     def _split(self, node):
-        ids = node.ids 
-        #print(ids)
+        ids = node.ids     
         best_gain = 0
         best_splits = []
         best_attribute = None
         order = None
         sub_data = self.data.iloc[ids, :]
+        len_ids = len(ids)
         for i, att in enumerate(self.attributes):
             values = self.data.iloc[ids, i].unique().tolist()
             #print(values)
@@ -103,7 +98,9 @@ class DecisionTreeID3(object):
             HxS= 0
             
             for split in splits:
-                HxS += len(split)*self._entropy(split)/len(ids)        
+                p = len(split)/len_ids
+                HxS += p*self._entropy(split)
+
             gain = node.entropy - HxS 
             if gain < self.min_gain: continue # stop if small gain 
             if gain > best_gain:
@@ -117,19 +114,20 @@ class DecisionTreeID3(object):
         return child_nodes
 
     def predict(self, new_data):
-        """
-        :param new_data: a new dataframe, each row is a datapoint
-        :return: predicted labels for each row
-        """
+       
         npoints = new_data.count()[0]
-        #print(type(npoints))
+    
         labels = [None]*npoints
+
         for n in range(npoints):
             x = new_data.iloc[n, :] # one point 
             # start from root and recursively travel if not meet a leaf 
             node = self.root
+            #print(type(node.order))
             while node.children: 
                 node = node.children[node.order.index(x[node.split_attribute])]
             labels[n] = node.label
         
         return labels
+
+    
