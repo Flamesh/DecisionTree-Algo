@@ -8,11 +8,11 @@ if __name__ == "__main__":
     
     time_start = time.time()
 
-    df_train = pd.read_csv('datasets/weather.csv')
+    df_train = pd.DataFrame.from_csv('train.csv')
     
     X_train = df_train.iloc[:, :-1]
     y_train = df_train.iloc[:, -1]
-    df_test = pd.read_csv('datasets/weather.csv')
+    df_test = pd.DataFrame.from_csv('test.csv')
     
     X_test = df_test.iloc[:, :-1]
     y_test = df_test.iloc[:, -1]
